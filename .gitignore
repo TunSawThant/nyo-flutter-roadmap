@@ -1,0 +1,82 @@
+# ==========================================================
+# Flutter / Dart  (multi-project repo — patterns match any depth)
+# ==========================================================
+
+# Dart / Pub
+.dart_tool/
+.packages
+.pub-cache/
+.pub/
+.flutter-plugins
+.flutter-plugins-dependencies
+build/
+
+# Generated / build output
+**/doc/api/
+**/ios/Flutter/.last_build_id
+app.*.symbols
+app.*.map.json
+
+# Android build artifacts
+android/app/debug
+android/app/profile
+android/app/release
+android/.gradle/
+android/local.properties
+android/key.properties
+android/app/upload-keystore.jks
+android/app/*.jks
+
+# iOS / macOS
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec
+macos/Pods/
+macos/.symlinks/
+macos/Flutter/ephemeral/
+
+# Windows / Linux
+windows/flutter/ephemeral/
+linux/flutter/ephemeral/
+
+# ==========================================================
+# IDE / Editor
+# ==========================================================
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/*
+!.vscode/launch.json
+!.vscode/settings.json
+!.vscode/tasks.json
+*.swp
+*.swo
+
+# ==========================================================
+# macOS
+# ==========================================================
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# ==========================================================
+# Misc
+# ==========================================================
+*.log
+*.class
+*.pyc
+.history
+.build/
+.buildlog/
+migrate_working_dir/
+
+# ==========================================================
+# Secrets — never commit these
+# ==========================================================
+.env
+*.env
+*.pem
+*.key
