@@ -16,6 +16,7 @@ import '../widgets/main_scaffold.dart';
 // Typo မဖြစ်စေရန် ဤနည်းသည် Best Practice ဖြစ်သည်
 // =====================================================
 abstract class AppRoutes {
+  // Paths
   static const login = '/login';
   static const home = '/home';
   static const productDetail = '/home/product/:productId';
@@ -23,6 +24,18 @@ abstract class AppRoutes {
   static const settings = '/settings';
   static const navigationDemo = '/navigation-demo';
   static const dataPassing = '/data-passing';
+
+  // =====================================================
+  // Route NAMES - goNamed() / pushNamed() အတွက်
+  // String ကို တိုက်ရိုက်ရေးခြင်းထက် Typo မဖြစ်နိုင်၍ ပို၍စိတ်ချရသည်
+  // =====================================================
+  static const loginName = 'login';
+  static const homeName = 'home';
+  static const productDetailName = 'product-detail';
+  static const profileName = 'profile';
+  static const settingsName = 'settings';
+  static const navigationDemoName = 'navigation-demo';
+  static const dataPassingName = 'data-passing';
 
   // =====================================================
   // Path Parameters ထည့်ရန် Helper Methods
@@ -85,7 +98,7 @@ GoRouter createRouter(AuthService authService) {
       // =====================================================
       GoRoute(
         path: AppRoutes.login,
-        name: 'login',
+        name: AppRoutes.loginName,
         builder: (context, state) => const LoginScreen(),
       ),
 
@@ -102,13 +115,13 @@ GoRouter createRouter(AuthService authService) {
           // HOME TAB
           GoRoute(
             path: AppRoutes.home,
-            name: 'home',
+            name: AppRoutes.homeName,
             builder: (context, state) => const HomeScreen(),
             routes: [
               // PRODUCT DETAIL - Nested Route (Home > Product Detail)
               GoRoute(
                 path: 'product/:productId',
-                name: 'product-detail',
+                name: AppRoutes.productDetailName,
                 builder: (context, state) {
                   // Path Parameter ထုတ်ယူနည်း
                   final productId = state.pathParameters['productId']!;
@@ -129,21 +142,21 @@ GoRouter createRouter(AuthService authService) {
           // PROFILE TAB
           GoRoute(
             path: AppRoutes.profile,
-            name: 'profile',
+            name: AppRoutes.profileName,
             builder: (context, state) => const ProfileScreen(),
           ),
 
           // NAVIGATION DEMO TAB
           GoRoute(
             path: AppRoutes.navigationDemo,
-            name: 'navigation-demo',
+            name: AppRoutes.navigationDemoName,
             builder: (context, state) => const NavigationDemoScreen(),
           ),
 
           // DATA PASSING TAB
           GoRoute(
             path: AppRoutes.dataPassing,
-            name: 'data-passing',
+            name: AppRoutes.dataPassingName,
             builder: (context, state) {
               // Query Parameters ထုတ်ယူနည်း
               final tab = state.uri.queryParameters['tab'] ?? 'query';
@@ -154,7 +167,7 @@ GoRouter createRouter(AuthService authService) {
           // SETTINGS TAB
           GoRoute(
             path: AppRoutes.settings,
-            name: 'settings',
+            name: AppRoutes.settingsName,
             builder: (context, state) => const SettingsScreen(),
           ),
         ],

@@ -67,11 +67,12 @@ class _CurrentRouteCard extends StatelessWidget {
 
     return Card(
       elevation: 0,
-      color: theme.colorScheme.primaryContainer.withOpacity(0.2),
+      color: theme.colorScheme.primaryContainer.withValues(alpha: 0.2),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
         side: BorderSide(
-            color: theme.colorScheme.primary.withOpacity(0.2)),
+          color: theme.colorScheme.primary.withValues(alpha: 0.2),
+        ),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -80,14 +81,22 @@ class _CurrentRouteCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(Icons.location_on_rounded,
-                    color: theme.colorScheme.primary, size: 20),
+                Icon(
+                  Icons.location_on_rounded,
+                  color: theme.colorScheme.primary,
+                  size: 20,
+                ),
                 const SizedBox(width: 8),
-                Text(
-                  'GoRouterState.of(context) - Current Route Info',
-                  style: theme.textTheme.labelMedium?.copyWith(
-                    color: theme.colorScheme.primary,
-                    fontWeight: FontWeight.bold,
+                // BUG FIX: Text ကို Expanded ဖြင့် မထုပ်ထားလျှင် မျက်နှာပြင်ကျဉ်းသော
+                // Device တွင် "RenderFlex overflowed by 4.6 pixels on the right"
+                // ဖြစ်သည်။ Expanded ဖြင့် ရရှိသော အကျယ်အတွင်း စာသားခေါက်ပေးမည်။
+                Expanded(
+                  child: Text(
+                    'GoRouterState.of(context) - Current Route Info',
+                    style: theme.textTheme.labelMedium?.copyWith(
+                      color: theme.colorScheme.primary,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ],
@@ -96,12 +105,18 @@ class _CurrentRouteCard extends StatelessWidget {
             _infoRow('uri', state.uri.toString()),
             _infoRow('matchedLocation', state.matchedLocation),
             _infoRow('name', state.name ?? 'null'),
-            _infoRow('pathParameters',
-                state.pathParameters.isEmpty ? '{}' : state.pathParameters.toString()),
-            _infoRow('queryParameters',
-                state.uri.queryParameters.isEmpty
-                    ? '{}'
-                    : state.uri.queryParameters.toString()),
+            _infoRow(
+              'pathParameters',
+              state.pathParameters.isEmpty
+                  ? '{}'
+                  : state.pathParameters.toString(),
+            ),
+            _infoRow(
+              'queryParameters',
+              state.uri.queryParameters.isEmpty
+                  ? '{}'
+                  : state.uri.queryParameters.toString(),
+            ),
           ],
         ),
       ),
@@ -163,7 +178,8 @@ class _FeaturesSummaryCard extends StatelessWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
         side: BorderSide(
-            color: theme.colorScheme.outlineVariant.withOpacity(0.5)),
+          color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
+        ),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -174,10 +190,14 @@ class _FeaturesSummaryCard extends StatelessWidget {
               children: [
                 const Text('🗺️', style: TextStyle(fontSize: 20)),
                 const SizedBox(width: 8),
-                Text(
-                  'ဤ App တွင် သင်ကြားသော GoRouter Features',
-                  style: theme.textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
+                // BUG FIX: Expanded မပါလျှင် ကျဉ်းသော မျက်နှာပြင်တွင်
+                // "RenderFlex overflowed by 10.0 pixels on the right" ဖြစ်သည်
+                Expanded(
+                  child: Text(
+                    'ဤ App တွင် သင်ကြားသော GoRouter Features',
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ],
@@ -198,7 +218,9 @@ class _FeaturesSummaryCard extends StatelessWidget {
                     Text(
                       f.$2,
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurface.withOpacity(0.6),
+                        color: theme.colorScheme.onSurface.withValues(
+                          alpha: 0.6,
+                        ),
                       ),
                     ),
                   ],
@@ -223,7 +245,8 @@ class _QuickNavSection extends StatelessWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
         side: BorderSide(
-            color: theme.colorScheme.outlineVariant.withOpacity(0.5)),
+          color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
+        ),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -240,30 +263,41 @@ class _QuickNavSection extends StatelessWidget {
             Wrap(
               spacing: 8,
               runSpacing: 8,
-              children: [
-                ('🏠 go(Home)', () => context.go(AppRoutes.home)),
-                ('👤 go(Profile)', () => context.go(AppRoutes.profile)),
-                ('❌ go(/not-found)',
-                    () => context.go('/this-route-does-not-exist')),
-                ('📄 push(p001)',
-                    () => context.push(AppRoutes.productDetailPath('p001'))),
-                ('🔙 canPop()', () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content:
-                          Text('canPop() = ${context.canPop()}'),
-                      behavior: SnackBarBehavior.floating,
-                    ),
-                  );
-                }),
-              ]
-                  .map(
-                    (item) => ActionChip(
-                      label: Text(item.$1, style: const TextStyle(fontSize: 12)),
-                      onPressed: item.$2,
-                    ),
-                  )
-                  .toList(),
+              children:
+                  [
+                        ('🏠 go(Home)', () => context.go(AppRoutes.home)),
+                        ('👤 go(Profile)', () => context.go(AppRoutes.profile)),
+                        (
+                          '❌ go(/not-found)',
+                          () => context.go('/this-route-does-not-exist'),
+                        ),
+                        (
+                          '📄 push(p001)',
+                          () =>
+                              context.push(AppRoutes.productDetailPath('p001')),
+                        ),
+                        (
+                          '🔙 canPop()',
+                          () {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('canPop() = ${context.canPop()}'),
+                                behavior: SnackBarBehavior.floating,
+                              ),
+                            );
+                          },
+                        ),
+                      ]
+                      .map(
+                        (item) => ActionChip(
+                          label: Text(
+                            item.$1,
+                            style: const TextStyle(fontSize: 12),
+                          ),
+                          onPressed: item.$2,
+                        ),
+                      )
+                      .toList(),
             ),
           ],
         ),
@@ -281,9 +315,7 @@ class _DeepLinkCard extends StatelessWidget {
     return Card(
       elevation: 0,
       color: const Color(0xFF1E1E2E),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -293,17 +325,20 @@ class _DeepLinkCard extends StatelessWidget {
               children: [
                 Text('🔗', style: TextStyle(fontSize: 20)),
                 SizedBox(width: 8),
-                Text(
-                  'Deep Link URLs (for Info)',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
+                // BUG FIX: Expanded ဖြင့် ကျဉ်းသော မျက်နှာပြင်တွင်
+                // စာသားကျော်လွန်ခြင်းကို ကာကွယ်သည်
+                Expanded(
+                  child: Text(
+                    'Deep Link URLs (for Info)',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ],
             ),
-            const Divider(
-                height: 16, color: Colors.white24),
+            const Divider(height: 16, color: Colors.white24),
             ...[
               '/login',
               '/home',
@@ -312,40 +347,37 @@ class _DeepLinkCard extends StatelessWidget {
               '/navigation-demo',
               '/data-passing?tab=query',
               '/settings',
-            ]
-                .map(
-                  (url) => Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 4),
-                    child: Row(
-                      children: [
-                        const Text(
-                          '→ ',
-                          style: TextStyle(
-                              color: Colors.greenAccent, fontSize: 12),
-                        ),
-                        Expanded(
-                          child: Text(
-                            url,
-                            style: const TextStyle(
-                              color: Colors.greenAccent,
-                              fontFamily: 'monospace',
-                              fontSize: 12,
-                            ),
-                          ),
-                        ),
-                        GestureDetector(
-                          onTap: () => context.go(url),
-                          child: const Icon(
-                            Icons.open_in_new_rounded,
-                            color: Colors.white38,
-                            size: 14,
-                          ),
-                        ),
-                      ],
+            ].map(
+              (url) => Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Row(
+                  children: [
+                    const Text(
+                      '→ ',
+                      style: TextStyle(color: Colors.greenAccent, fontSize: 12),
                     ),
-                  ),
-                )
-                .toList(),
+                    Expanded(
+                      child: Text(
+                        url,
+                        style: const TextStyle(
+                          color: Colors.greenAccent,
+                          fontFamily: 'monospace',
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () => context.go(url),
+                      child: const Icon(
+                        Icons.open_in_new_rounded,
+                        color: Colors.white38,
+                        size: 14,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ],
         ),
       ),
@@ -357,8 +389,7 @@ class _SettingsLogoutButton extends StatelessWidget {
   final AuthService auth;
   final ThemeData theme;
 
-  const _SettingsLogoutButton(
-      {required this.auth, required this.theme});
+  const _SettingsLogoutButton({required this.auth, required this.theme});
 
   @override
   Widget build(BuildContext context) {
@@ -370,7 +401,9 @@ class _SettingsLogoutButton extends StatelessWidget {
         label: const Text('Logout (GoRouter Auto-Redirect Demo)'),
         style: OutlinedButton.styleFrom(
           foregroundColor: theme.colorScheme.error,
-          side: BorderSide(color: theme.colorScheme.error.withOpacity(0.5)),
+          side: BorderSide(
+            color: theme.colorScheme.error.withValues(alpha: 0.5),
+          ),
           padding: const EdgeInsets.symmetric(vertical: 14),
         ),
       ),

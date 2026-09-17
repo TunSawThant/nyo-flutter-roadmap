@@ -34,17 +34,15 @@ class _LoginScreenState extends State<LoginScreen>
       parent: _animController,
       curve: Curves.easeOut,
     );
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.3),
-      end: Offset.zero,
-    ).animate(
-      CurvedAnimation(parent: _animController, curve: Curves.easeOutCubic),
-    );
+    _slideAnimation =
+        Tween<Offset>(begin: const Offset(0, 0.3), end: Offset.zero).animate(
+          CurvedAnimation(parent: _animController, curve: Curves.easeOutCubic),
+        );
     _animController.forward();
 
-    // Demo credentials prefill
-    _emailController.text = 'koaung@example.com';
-    _passwordController.text = 'password123';
+    // Demo credentials prefill - စမ်းသပ်ရလွယ်ကူစေရန် ဖြည့်ပေးထားသည်
+    _emailController.text = AuthService.demoEmail;
+    _passwordController.text = AuthService.demoPassword;
   }
 
   @override
@@ -84,8 +82,8 @@ class _LoginScreenState extends State<LoginScreen>
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              theme.colorScheme.primary.withOpacity(0.15),
-              theme.colorScheme.secondary.withOpacity(0.1),
+              theme.colorScheme.primary.withValues(alpha: 0.15),
+              theme.colorScheme.secondary.withValues(alpha: 0.1),
               theme.colorScheme.surface,
             ],
           ),
@@ -136,17 +134,14 @@ class _LoginScreenState extends State<LoginScreen>
             borderRadius: BorderRadius.circular(30),
             boxShadow: [
               BoxShadow(
-                color: theme.colorScheme.primary.withOpacity(0.3),
+                color: theme.colorScheme.primary.withValues(alpha: 0.3),
                 blurRadius: 20,
                 offset: const Offset(0, 8),
               ),
             ],
           ),
           child: Center(
-            child: Text(
-              '🗺️',
-              style: const TextStyle(fontSize: 50),
-            ),
+            child: Text('🗺️', style: const TextStyle(fontSize: 50)),
           ),
         ),
         const SizedBox(height: 20),
@@ -161,7 +156,7 @@ class _LoginScreenState extends State<LoginScreen>
         Text(
           'Flutter Navigation တကယ်နားလည်မည်',
           style: theme.textTheme.bodyMedium?.copyWith(
-            color: theme.colorScheme.onSurface.withOpacity(0.6),
+            color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
           ),
           textAlign: TextAlign.center,
         ),
@@ -175,7 +170,7 @@ class _LoginScreenState extends State<LoginScreen>
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(24),
         side: BorderSide(
-          color: theme.colorScheme.outlineVariant.withOpacity(0.5),
+          color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
         ),
       ),
       child: Padding(
@@ -204,8 +199,7 @@ class _LoginScreenState extends State<LoginScreen>
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                validator: (v) =>
-                    v?.isEmpty == true ? 'Email ထည့်ပါ' : null,
+                validator: (v) => v?.isEmpty == true ? 'Email ထည့်ပါ' : null,
               ),
               const SizedBox(height: 16),
 
@@ -229,9 +223,11 @@ class _LoginScreenState extends State<LoginScreen>
                         setState(() => _obscurePassword = !_obscurePassword),
                   ),
                 ),
-                validator: (v) =>
-                    v?.isEmpty == true ? 'Password ထည့်ပါ' : null,
-                onFieldSubmitted: (_) => _handleLogin(),
+                validator: (v) => v?.isEmpty == true ? 'Password ထည့်ပါ' : null,
+                onFieldSubmitted: (_) {
+                  // Loading ဖြစ်နေစဉ် Enter နှိပ်လျှင် Request ထပ်မပို့စေရန်
+                  if (!isLoading) _handleLogin();
+                },
               ),
 
               // Error Message
@@ -245,8 +241,11 @@ class _LoginScreenState extends State<LoginScreen>
                   ),
                   child: Row(
                     children: [
-                      Icon(Icons.error_outline,
-                          color: theme.colorScheme.error, size: 18),
+                      Icon(
+                        Icons.error_outline,
+                        color: theme.colorScheme.error,
+                        size: 18,
+                      ),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
@@ -291,10 +290,10 @@ class _LoginScreenState extends State<LoginScreen>
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: theme.colorScheme.secondaryContainer.withOpacity(0.5),
+        color: theme.colorScheme.secondaryContainer.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: theme.colorScheme.secondary.withOpacity(0.3),
+          color: theme.colorScheme.secondary.withValues(alpha: 0.3),
         ),
       ),
       child: Column(
@@ -302,21 +301,29 @@ class _LoginScreenState extends State<LoginScreen>
         children: [
           Row(
             children: [
-              Icon(Icons.info_outline,
-                  color: theme.colorScheme.secondary, size: 18),
+              Icon(
+                Icons.info_outline,
+                color: theme.colorScheme.secondary,
+                size: 18,
+              ),
               const SizedBox(width: 8),
-              Text(
-                'Demo Credentials',
-                style: theme.textTheme.labelLarge?.copyWith(
-                  color: theme.colorScheme.secondary,
-                  fontWeight: FontWeight.bold,
+              // BUG FIX: Expanded မပါလျှင် အလွန်ကျဉ်းသော မျက်နှာပြင်
+              // (320dp) တွင် RenderFlex overflow ဖြစ်သည်
+              Expanded(
+                child: Text(
+                  'Demo Credentials',
+                  style: theme.textTheme.labelLarge?.copyWith(
+                    color: theme.colorScheme.secondary,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ],
           ),
           const SizedBox(height: 8),
           Text(
-            '📧 Email: koaung@example.com\n🔑 Password: password123',
+            '📧 Email: ${AuthService.demoEmail}\n'
+            '🔑 Password: ${AuthService.demoPassword}',
             style: theme.textTheme.bodySmall?.copyWith(
               color: theme.colorScheme.onSecondaryContainer,
               fontFamily: 'monospace',
@@ -326,7 +333,9 @@ class _LoginScreenState extends State<LoginScreen>
           Text(
             '💡 GoRouter Redirect Feature: Login ဝင်ပြီးသည်နှင့် Auth State ပြောင်းလဲပြီး Auto-Navigate မည်!',
             style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.onSecondaryContainer.withOpacity(0.8),
+              color: theme.colorScheme.onSecondaryContainer.withValues(
+                alpha: 0.8,
+              ),
               fontStyle: FontStyle.italic,
             ),
           ),

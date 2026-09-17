@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../data/mock_data.dart';
 import '../models/product_model.dart';
+import '../router/app_router.dart';
 
 /// Product Detail Screen
 /// Path Parameter နှင့် Extra Data ရယူနည်းများပြသည်
@@ -23,6 +24,20 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   bool _isAddedToCart = false;
   int _quantity = 1;
 
+  /// Screen ကို ပိတ်ပြီး Data ပြန်ပို့သည်။
+  ///
+  /// BUG FIX: Deep Link (ဥပမာ /home/product/p001 ကို တိုက်ရိုက်ဖွင့်ခြင်း) ဖြင့်
+  /// ဝင်လာလျှင် ပြန်ရန် Navigation Stack မရှိသောကြောင့် context.pop() က
+  /// Error တင်မည်။ ထို့ကြောင့် canPop() စစ်ဆေးပြီးမှ pop() လုပ်သည်။
+  void _closeScreen(BuildContext context, Map<String, dynamic> result) {
+    if (context.canPop()) {
+      context.pop(result);
+    } else {
+      // Stack မရှိလျှင် Home သို့ ပြန်ပို့သည်
+      context.go(AppRoutes.home);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final product = MockData.findById(widget.productId);
@@ -40,7 +55,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               Text('Product "${widget.productId}" မတွေ့ပါ'),
               const SizedBox(height: 16),
               FilledButton(
-                onPressed: () => context.pop(),
+                onPressed: () => _closeScreen(context, {'action': 'not_found'}),
                 child: const Text('ပြန်သွားပါ'),
               ),
             ],
@@ -60,13 +75,12 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             expandedHeight: 250,
             pinned: true,
             leading: IconButton(
-              onPressed: () {
-                // context.pop() - Stack မှ Pop လုပ်သည်
-                // Return Data ပါ ပို့ပြန်နိုင်သည်
-                if (context.canPop()) {
-                  context.pop({'action': 'viewed', 'productId': product.id});
-                }
-              },
+              // context.pop() - Stack မှ Pop လုပ်ပြီး Data ပါ ပြန်ပို့သည်
+              // Stack မရှိလျှင် Home သို့ ပြန်ပို့သည် (Deep Link Case)
+              onPressed: () => _closeScreen(context, {
+                'action': 'viewed',
+                'productId': product.id,
+              }),
               icon: const Icon(Icons.arrow_back_rounded),
             ),
             title: Text(product.name),
@@ -143,14 +157,21 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.info_outline,
-              size: 16, color: theme.colorScheme.onTertiaryContainer),
+          Icon(
+            Icons.info_outline,
+            size: 16,
+            color: theme.colorScheme.onTertiaryContainer,
+          ),
           const SizedBox(width: 6),
-          Text(
-            'Extra Data: from = "${widget.fromSource}"',
-            style: theme.textTheme.labelSmall?.copyWith(
-              color: theme.colorScheme.onTertiaryContainer,
-              fontFamily: 'monospace',
+          // BUG FIX: Source အမည် ရှည်လျှင် ကျဉ်းသော မျက်နှာပြင်တွင် Overflow
+          // မဖြစ်စေရန် Flexible (loose) ဖြင့် ခေါက်ပေးသည်
+          Flexible(
+            child: Text(
+              'Extra Data: from = "${widget.fromSource}"',
+              style: theme.textTheme.labelSmall?.copyWith(
+                color: theme.colorScheme.onTertiaryContainer,
+                fontFamily: 'monospace',
+              ),
             ),
           ),
         ],
@@ -167,8 +188,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
                   color: theme.colorScheme.secondaryContainer,
                   borderRadius: BorderRadius.circular(20),
@@ -202,8 +225,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             ),
             if (!product.isInStock)
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   color: theme.colorScheme.errorContainer,
                   borderRadius: BorderRadius.circular(8),
@@ -229,7 +251,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       color: theme.colorScheme.surfaceContainerHighest,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: theme.colorScheme.outline.withOpacity(0.2)),
+        side: BorderSide(
+          color: theme.colorScheme.outline.withValues(alpha: 0.2),
+        ),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -238,27 +262,46 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           children: [
             Row(
               children: [
-                Icon(Icons.code_rounded,
-                    color: theme.colorScheme.primary, size: 18),
+                Icon(
+                  Icons.code_rounded,
+                  color: theme.colorScheme.primary,
+                  size: 18,
+                ),
                 const SizedBox(width: 8),
-                Text(
-                  'GoRouter Concepts ဤ Page တွင် သင်ကြားနေသည်',
-                  style: theme.textTheme.labelMedium?.copyWith(
-                    color: theme.colorScheme.primary,
-                    fontWeight: FontWeight.bold,
+                // BUG FIX: Myanmar စာသား ရှည်သောကြောင့် ကျဉ်းသော မျက်နှာပြင်တွင်
+                // Overflow မဖြစ်စေရန် Expanded ဖြင့် ခေါက်ပေးသည်
+                Expanded(
+                  child: Text(
+                    'GoRouter Concepts ဤ Page တွင် သင်ကြားနေသည်',
+                    style: theme.textTheme.labelMedium?.copyWith(
+                      color: theme.colorScheme.primary,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ],
             ),
             const Divider(height: 20),
-            _codeRow(theme, '1️⃣ Path Parameter',
-                ':productId → widget.productId = "${widget.productId}"'),
-            _codeRow(theme, '2️⃣ Extra Data',
-                'state.extra → fromSource = "${widget.fromSource ?? 'null'}"'),
-            _codeRow(theme, '3️⃣ context.pop(data)',
-                'Back ကိုနှိပ်သည်နှင့် Data ပြန်ပို့မည်'),
-            _codeRow(theme, '4️⃣ context.canPop()',
-                'Pop လုပ်နိုင်/မနိုင် စစ်ဆေးသည်'),
+            _codeRow(
+              theme,
+              '1️⃣ Path Parameter',
+              ':productId → widget.productId = "${widget.productId}"',
+            ),
+            _codeRow(
+              theme,
+              '2️⃣ Extra Data',
+              'state.extra → fromSource = "${widget.fromSource ?? 'null'}"',
+            ),
+            _codeRow(
+              theme,
+              '3️⃣ context.pop(data)',
+              'Back ကိုနှိပ်သည်နှင့် Data ပြန်ပို့မည်',
+            ),
+            _codeRow(
+              theme,
+              '4️⃣ context.canPop()',
+              'Pop လုပ်နိုင်/မနိုင် စစ်ဆေးသည်',
+            ),
           ],
         ),
       ),
@@ -281,7 +324,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             value,
             style: theme.textTheme.bodySmall?.copyWith(
               fontFamily: 'monospace',
-              color: theme.colorScheme.onSurface.withOpacity(0.7),
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
             ),
           ),
         ],
@@ -304,7 +347,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           product.description,
           style: theme.textTheme.bodyMedium?.copyWith(
             height: 1.6,
-            color: theme.colorScheme.onSurface.withOpacity(0.8),
+            color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
           ),
         ),
       ],
@@ -314,10 +357,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   Widget _buildRatingCard(ThemeData theme, ProductModel product) {
     return Card(
       elevation: 0,
-      color: Colors.amber.withOpacity(0.1),
+      color: Colors.amber.withValues(alpha: 0.1),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: Colors.amber.withOpacity(0.3)),
+        side: BorderSide(color: Colors.amber.withValues(alpha: 0.3)),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -347,22 +390,26 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               ],
             ),
             const SizedBox(width: 24),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '${product.reviewCount} reviews',
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
+            // BUG FIX: Expanded ဖြင့် ထုပ်ပိုးထားခြင်းဖြင့် ကျဉ်းသော မျက်နှာပြင်တွင်
+            // Review စာသား ကျော်လွန်ခြင်းကို ကာကွယ်သည်
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '${product.reviewCount} reviews',
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                ),
-                Text(
-                  'Verified Purchases များမှ',
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onSurface.withOpacity(0.6),
+                  Text(
+                    'Verified Purchases များမှ',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ],
         ),
@@ -373,15 +420,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   Widget _buildQuantitySelector(ThemeData theme) {
     return Row(
       children: [
-        Text(
-          'အရေအတွက်:',
-          style: theme.textTheme.titleSmall,
-        ),
+        Text('အရေအတွက်:', style: theme.textTheme.titleSmall),
         const Spacer(),
         IconButton.outlined(
-          onPressed: _quantity > 1
-              ? () => setState(() => _quantity--)
-              : null,
+          onPressed: _quantity > 1 ? () => setState(() => _quantity--) : null,
           icon: const Icon(Icons.remove),
         ),
         Padding(
@@ -402,15 +444,22 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   }
 
   Widget _buildBottomBar(
-      BuildContext context, ThemeData theme, ProductModel product) {
+    BuildContext context,
+    ThemeData theme,
+    ProductModel product,
+  ) {
     return Container(
       padding: EdgeInsets.fromLTRB(
-          20, 16, 20, MediaQuery.of(context).padding.bottom + 16),
+        20,
+        16,
+        20,
+        MediaQuery.of(context).padding.bottom + 16,
+      ),
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withValues(alpha: 0.08),
             blurRadius: 20,
             offset: const Offset(0, -4),
           ),
@@ -436,7 +485,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     }
                   : null,
               icon: Icon(
-                _isAddedToCart ? Icons.check_circle_rounded : Icons.shopping_cart_outlined,
+                _isAddedToCart
+                    ? Icons.check_circle_rounded
+                    : Icons.shopping_cart_outlined,
               ),
               label: Text(
                 _isAddedToCart ? 'Cart ထဲ ထည့်ပြီ' : 'Cart ထဲ ထည့်မည်',
@@ -451,7 +502,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           OutlinedButton(
             onPressed: () {
               // context.pop() နှင့် Data ပြန်ပို့နည်း
-              context.pop({
+              _closeScreen(context, {
                 'action': 'purchased',
                 'productId': product.id,
                 'quantity': _quantity,

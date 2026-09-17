@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import '../models/user_model.dart';
 import '../services/auth_service.dart';
 import '../router/app_router.dart';
 
@@ -54,7 +55,9 @@ class ProfileScreen extends StatelessWidget {
 }
 
 class _UserAvatarCard extends StatelessWidget {
-  final dynamic user;
+  // မူလက `dynamic` ဖြစ်ခဲ့သောကြောင့် Typo တစ်ခုခုရှိလျှင် Compile Time တွင်
+  // မတွေ့နိုင်၊ Runtime တွင်သာ Error တင်သည်။ ယခု UserModel? ဖြင့် Type-safe ဖြစ်သည်။
+  final UserModel? user;
   final ThemeData theme;
 
   const _UserAvatarCard({this.user, required this.theme});
@@ -66,7 +69,7 @@ class _UserAvatarCard extends StatelessWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(24),
         side: BorderSide(
-          color: theme.colorScheme.outlineVariant.withOpacity(0.5),
+          color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
         ),
       ),
       child: Padding(
@@ -86,7 +89,7 @@ class _UserAvatarCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(24),
                 boxShadow: [
                   BoxShadow(
-                    color: theme.colorScheme.primary.withOpacity(0.3),
+                    color: theme.colorScheme.primary.withValues(alpha: 0.3),
                     blurRadius: 15,
                     offset: const Offset(0, 6),
                   ),
@@ -110,19 +113,20 @@ class _UserAvatarCard extends StatelessWidget {
             Text(
               user?.email ?? '',
               style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurface.withOpacity(0.6),
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
               ),
             ),
             const SizedBox(height: 12),
             Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
               decoration: BoxDecoration(
                 color: theme.colorScheme.primaryContainer,
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Text(
-                user?.role?.toUpperCase() ?? 'GUEST',
+                // `role` သည် non-nullable ဖြစ်သောကြောင့် `user` တစ်ခုတည်းကိုသာ
+                // null-aware (?.) ဖြင့် စစ်ရသည်
+                user?.role.toUpperCase() ?? 'GUEST',
                 style: theme.textTheme.labelMedium?.copyWith(
                   color: theme.colorScheme.onPrimaryContainer,
                   fontWeight: FontWeight.bold,
@@ -144,11 +148,11 @@ class _RedirectExplanationCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       elevation: 0,
-      color: theme.colorScheme.primaryContainer.withOpacity(0.3),
+      color: theme.colorScheme.primaryContainer.withValues(alpha: 0.3),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
         side: BorderSide(
-          color: theme.colorScheme.primary.withOpacity(0.2),
+          color: theme.colorScheme.primary.withValues(alpha: 0.2),
         ),
       ),
       child: Padding(
@@ -158,14 +162,20 @@ class _RedirectExplanationCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(Icons.shield_rounded,
-                    color: theme.colorScheme.primary, size: 20),
+                Icon(
+                  Icons.shield_rounded,
+                  color: theme.colorScheme.primary,
+                  size: 20,
+                ),
                 const SizedBox(width: 8),
-                Text(
-                  'GoRouter Redirect (Auth Guard)',
-                  style: theme.textTheme.titleSmall?.copyWith(
-                    color: theme.colorScheme.primary,
-                    fontWeight: FontWeight.bold,
+                // BUG FIX: Expanded မပါလျှင် ကျဉ်းသော မျက်နှာပြင်တွင် Overflow ဖြစ်သည်
+                Expanded(
+                  child: Text(
+                    'GoRouter Redirect (Auth Guard)',
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      color: theme.colorScheme.primary,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ],
@@ -213,14 +223,16 @@ refreshListenable: authService,''',
         children: [
           CircleAvatar(
             radius: 10,
-            backgroundColor: Colors.blue.withOpacity(0.2),
+            backgroundColor: Colors.blue.withValues(alpha: 0.2),
             child: Text(
               num,
               style: const TextStyle(fontSize: 10, color: Colors.blue),
             ),
           ),
           const SizedBox(width: 8),
-          Text(text, style: const TextStyle(fontSize: 12)),
+          // BUG FIX: ရှင်းလင်းချက် စာသား (Myanmar) သည် ရှည်သောကြောင့်
+          // Expanded ဖြင့် ရရှိသော အကျယ်အတွင်း ခေါက်ပေးရသည်
+          Expanded(child: Text(text, style: const TextStyle(fontSize: 12))),
         ],
       ),
     );
@@ -265,7 +277,7 @@ class _ProfileOptionsList extends StatelessWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
         side: BorderSide(
-          color: theme.colorScheme.outlineVariant.withOpacity(0.5),
+          color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
         ),
       ),
       child: Column(
@@ -280,7 +292,7 @@ class _ProfileOptionsList extends StatelessWidget {
                 subtitle: Text(
                   opt.sub,
                   style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onSurface.withOpacity(0.5),
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
                     fontFamily: 'monospace',
                   ),
                 ),
@@ -306,12 +318,10 @@ class _LogoutSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       elevation: 0,
-      color: theme.colorScheme.errorContainer.withOpacity(0.3),
+      color: theme.colorScheme.errorContainer.withValues(alpha: 0.3),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
-        side: BorderSide(
-          color: theme.colorScheme.error.withOpacity(0.2),
-        ),
+        side: BorderSide(color: theme.colorScheme.error.withValues(alpha: 0.2)),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -320,14 +330,20 @@ class _LogoutSection extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(Icons.logout_rounded,
-                    color: theme.colorScheme.error, size: 20),
+                Icon(
+                  Icons.logout_rounded,
+                  color: theme.colorScheme.error,
+                  size: 20,
+                ),
                 const SizedBox(width: 8),
-                Text(
-                  'Logout & GoRouter Redirect',
-                  style: theme.textTheme.titleSmall?.copyWith(
-                    color: theme.colorScheme.error,
-                    fontWeight: FontWeight.bold,
+                // BUG FIX: Expanded မပါလျှင် ကျဉ်းသော မျက်နှာပြင်တွင် Overflow ဖြစ်သည်
+                Expanded(
+                  child: Text(
+                    'Logout & GoRouter Redirect',
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      color: theme.colorScheme.error,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ],
@@ -339,7 +355,7 @@ class _LogoutSection extends StatelessWidget {
               'isLoggedIn = false → /login သို့ Auto-Redirect မည်',
               style: theme.textTheme.bodySmall?.copyWith(
                 height: 1.6,
-                color: theme.colorScheme.onSurface.withOpacity(0.7),
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
               ),
             ),
             const SizedBox(height: 16),
@@ -363,8 +379,7 @@ class _LogoutSection extends StatelessWidget {
                         ),
                       )
                     : const Icon(Icons.logout_rounded),
-                label: Text(
-                    auth.isLoading ? 'Logout လုပ်နေသည်...' : 'Logout'),
+                label: Text(auth.isLoading ? 'Logout လုပ်နေသည်...' : 'Logout'),
                 style: FilledButton.styleFrom(
                   backgroundColor: theme.colorScheme.error,
                   padding: const EdgeInsets.symmetric(vertical: 14),

@@ -19,15 +19,57 @@ class _DataPassingScreenState extends State<DataPassingScreen>
 
   static const _tabs = ['query', 'extra', 'path', 'return'];
 
+  /// Query Param မှ ရလာသော Tab Name ကို Index အဖြစ် ပြောင်းသည်
+  /// မသိသော Tab Name ဖြစ်လျှင် ပထမ Tab (0) ကို ပြန်ပေးသည်
+  int _tabIndexFor(String tab) {
+    final index = _tabs.indexOf(tab);
+    return index >= 0 ? index : 0;
+  }
+
   @override
   void initState() {
     super.initState();
-    final initialIndex = _tabs.indexOf(widget.initialTab);
     _tabController = TabController(
       length: _tabs.length,
       vsync: this,
-      initialIndex: initialIndex >= 0 ? initialIndex : 0,
+      initialIndex: _tabIndexFor(widget.initialTab),
     );
+  }
+
+  @override
+  void didUpdateWidget(covariant DataPassingScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // BUG FIX: Route Path သည် တူညီသော်လည်း Query Param (?tab=...) ပြောင်းလျှင်
+    // Flutter သည် State ကို ပြန်မဖန်တီးသောကြောင့် initState() ပြန်မလုပ်ပါ။
+    // ထို့ကြောင့် Tab အသစ်သို့ ဤနေရာတွင်လိုက်ပြောင်းပေးရသည်။
+    if (oldWidget.initialTab != widget.initialTab) {
+      _animateToTab(widget.initialTab);
+    }
+  }
+
+  /// Tab သို့ ရွှေ့သည်။
+  /// TabController.animateTo() သည် notifyListeners() ကို ချက်ချင်း ခေါ်သောကြောင့်
+  /// build/didUpdateWidget အတွင်းမှ တိုက်ရိုက်ခေါ်လျှင် Error တင်နိုင်သည်။
+  /// ထို့ကြောင့် Frame ပြီးဆုံးမှ ရွှေ့ပေးသည်။
+  void _animateToTab(String tab) {
+    final index = _tabIndexFor(tab);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || _tabController.index == index) return;
+      _tabController.animateTo(index);
+    });
+  }
+
+  /// Query Param Button များမှ Tab ပြောင်းရန်
+  /// URL ကိုပါ တစ်ခါတည်း Update လုပ်သည် (URL သည် Tab ၏ Source of Truth)
+  void _selectTab(String tab) {
+    final index = _tabIndexFor(tab);
+    if (_tabController.index != index) {
+      _tabController.animateTo(index);
+    }
+    final location = '${AppRoutes.dataPassing}?tab=$tab';
+    if (GoRouterState.of(context).uri.toString() != location) {
+      context.go(location);
+    }
   }
 
   @override
@@ -57,7 +99,7 @@ class _DataPassingScreenState extends State<DataPassingScreen>
       body: TabBarView(
         controller: _tabController,
         children: [
-          _QueryParamsTab(),
+          _QueryParamsTab(onSelectTab: _selectTab),
           _ExtraDataTab(),
           _PathParamsTab(),
           _ReturnDataTab(),
@@ -71,12 +113,16 @@ class _DataPassingScreenState extends State<DataPassingScreen>
 // QUERY PARAMETERS TAB
 // =====================================================
 class _QueryParamsTab extends StatefulWidget {
+  /// Parent (DataPassingScreen) မှ Tab ကို ပြောင်းပေးမည့် Callback
+  final ValueChanged<String> onSelectTab;
+
+  const _QueryParamsTab({required this.onSelectTab});
+
   @override
   State<_QueryParamsTab> createState() => _QueryParamsTabState();
 }
 
 class _QueryParamsTabState extends State<_QueryParamsTab> {
-  final _tabController = TextEditingController(text: 'query');
   String? _currentQuery;
 
   @override
@@ -160,9 +206,8 @@ class _QueryParamsTabState extends State<_QueryParamsTab> {
               child: OutlinedButton.icon(
                 onPressed: () {
                   // Query Parameter ဖြင့် Navigate လုပ်နည်း
-                  context.go(
-                    '${AppRoutes.dataPassing}?tab=$tab',
-                  );
+                  // URL သာမက Tab ကိုပါ ချက်ချင်းပြောင်းပေးသည်
+                  widget.onSelectTab(tab);
                 },
                 icon: const Icon(Icons.link, size: 16),
                 label: Text('/data-passing?tab=$tab'),
@@ -200,8 +245,6 @@ GoRoute(
 class _ExtraDataTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
       child: Column(
@@ -262,9 +305,9 @@ builder: (context, state) {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.amber.withOpacity(0.1),
+              color: Colors.amber.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.amber.withOpacity(0.3)),
+              border: Border.all(color: Colors.amber.withValues(alpha: 0.3)),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -272,7 +315,9 @@ builder: (context, state) {
                 const Text(
                   '⚠️ Extra Data ၏ အားနည်းချက်',
                   style: TextStyle(
-                      fontWeight: FontWeight.bold, color: Colors.amber),
+                    fontWeight: FontWeight.bold,
+                    color: Colors.amber,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 const Text(
@@ -350,20 +395,22 @@ context.pushNamed(
               padding: const EdgeInsets.only(bottom: 8),
               child: ListTile(
                 contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16, vertical: 4),
+                  horizontal: 16,
+                  vertical: 4,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
-                  side: BorderSide(
-                      color: theme.colorScheme.outlineVariant),
+                  side: BorderSide(color: theme.colorScheme.outlineVariant),
                 ),
                 leading: CircleAvatar(
                   backgroundColor: theme.colorScheme.primaryContainer,
                   child: Text(id),
                 ),
                 title: Text('/home/product/$id'),
-                subtitle: Text('pathParameters["productId"] = "$id"',
-                    style: const TextStyle(
-                        fontFamily: 'monospace', fontSize: 11)),
+                subtitle: Text(
+                  'pathParameters["productId"] = "$id"',
+                  style: const TextStyle(fontFamily: 'monospace', fontSize: 11),
+                ),
                 trailing: const Icon(Icons.arrow_forward_rounded),
                 onTap: () {
                   context.push(
@@ -446,15 +493,15 @@ void goBack() {
               color: _status == 'waiting'
                   ? theme.colorScheme.surfaceContainerHighest
                   : _status == 'loading'
-                      ? Colors.blue.withOpacity(0.1)
-                      : Colors.green.withOpacity(0.1),
+                  ? Colors.blue.withValues(alpha: 0.1)
+                  : Colors.green.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
                 color: _status == 'waiting'
-                    ? theme.colorScheme.outline.withOpacity(0.3)
+                    ? theme.colorScheme.outline.withValues(alpha: 0.3)
                     : _status == 'loading'
-                        ? Colors.blue.withOpacity(0.3)
-                        : Colors.green.withOpacity(0.3),
+                    ? Colors.blue.withValues(alpha: 0.3)
+                    : Colors.green.withValues(alpha: 0.3),
               ),
             ),
             child: Column(
@@ -474,14 +521,18 @@ void goBack() {
                         style: const TextStyle(fontSize: 16),
                       ),
                     const SizedBox(width: 8),
-                    Text(
-                      _status == 'waiting'
-                          ? 'Button နှိပ်ပြီး Demo ကြည့်ပါ'
-                          : _status == 'loading'
-                              ? 'Page မှ Return Data စောင့်နေသည်...'
-                              : 'Return Data ရပြီ!',
-                      style: theme.textTheme.labelMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
+                    // BUG FIX: စာသား ရှည်သောကြောင့် ကျဉ်းသော မျက်နှာပြင်တွင်
+                    // Overflow မဖြစ်စေရန် Expanded ဖြင့် ခေါက်ပေးသည်
+                    Expanded(
+                      child: Text(
+                        _status == 'waiting'
+                            ? 'Button နှိပ်ပြီး Demo ကြည့်ပါ'
+                            : _status == 'loading'
+                            ? 'Page မှ Return Data စောင့်နေသည်...'
+                            : 'Return Data ရပြီ!',
+                        style: theme.textTheme.labelMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ],
@@ -533,7 +584,7 @@ void goBack() {
           Text(
             '💡 Detail Page ၏ "pop(data)" Button နှိပ်လျှင် Data ပြန်ရမည်',
             style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.onSurface.withOpacity(0.6),
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
               fontStyle: FontStyle.italic,
             ),
             textAlign: TextAlign.center,
@@ -565,9 +616,9 @@ class _InfoCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.08),
+        color: color.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -580,10 +631,7 @@ class _InfoCard extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: color,
-                  ),
+                  style: TextStyle(fontWeight: FontWeight.bold, color: color),
                 ),
                 const SizedBox(height: 6),
                 Text(

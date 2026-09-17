@@ -16,25 +16,27 @@ class MainScaffold extends StatelessWidget {
     (
       icon: Icons.route_rounded,
       label: 'Navigation',
-      path: AppRoutes.navigationDemo
+      path: AppRoutes.navigationDemo,
     ),
     (
       icon: Icons.data_object_rounded,
       label: 'Data Pass',
-      path: AppRoutes.dataPassing
+      path: AppRoutes.dataPassing,
     ),
-    (
-      icon: Icons.settings_rounded,
-      label: 'Settings',
-      path: AppRoutes.settings
-    ),
+    (icon: Icons.settings_rounded, label: 'Settings', path: AppRoutes.settings),
   ];
 
   /// Current Location မှ Active Tab Index ရှာသည်
+  ///
+  /// ရိုးရိုး startsWith() ကိုသုံးပါက `/profile` နှင့် အနာဂတ်တွင် ထည့်မည့်
+  /// `/profile-settings` ကဲ့သို့ Route များ မှားယွင်းစွာ Match ဖြစ်နိုင်သည်။
+  /// ထို့ကြောင့် Path နှင့် တိတိကျကျတူခြင်း သို့မဟုတ် `/` ဖြင့် ဆက်ထားသော
+  /// Child Route (ဥပမာ `/home/product/p001`) ကိုသာ Match လုပ်သည်။
   int _currentIndex(BuildContext context) {
     final location = GoRouterState.of(context).matchedLocation;
     for (int i = 0; i < _navItems.length; i++) {
-      if (location.startsWith(_navItems[i].path)) {
+      final path = _navItems[i].path;
+      if (location == path || location.startsWith('$path/')) {
         return i;
       }
     }
@@ -53,7 +55,7 @@ class MainScaffold extends StatelessWidget {
           color: theme.colorScheme.surface,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.08),
+              color: Colors.black.withValues(alpha: 0.08),
               blurRadius: 20,
               offset: const Offset(0, -4),
             ),

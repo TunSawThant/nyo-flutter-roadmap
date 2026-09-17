@@ -129,21 +129,27 @@ class _PushPopTabState extends State<_PushPopTab> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.green.withOpacity(0.1),
+                color: Colors.green.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.green.withOpacity(0.3)),
+                border: Border.all(color: Colors.green.withValues(alpha: 0.3)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('✅ pop() မှ Return ရသော Data:',
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold, color: Colors.green)),
+                  const Text(
+                    '✅ pop() မှ Return ရသော Data:',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.green,
+                    ),
+                  ),
                   const SizedBox(height: 4),
                   Text(
                     _returnedData!,
                     style: const TextStyle(
-                        fontFamily: 'monospace', fontSize: 12),
+                      fontFamily: 'monospace',
+                      fontSize: 12,
+                    ),
                   ),
                 ],
               ),
@@ -302,9 +308,7 @@ class _StackVisualTab extends StatefulWidget {
 }
 
 class _StackVisualTabState extends State<_StackVisualTab> {
-  final List<_StackItem> _stack = [
-    _StackItem('Home', '🏠', Colors.green),
-  ];
+  final List<_StackItem> _stack = [_StackItem('Home', '🏠', Colors.green)];
 
   void _push(String name, String emoji, Color color) {
     setState(() => _stack.add(_StackItem(name, emoji, color)));
@@ -368,7 +372,7 @@ class _StackVisualTabState extends State<_StackVisualTab> {
                 Text(
                   '↑ ထိပ်ဆုံး (Active Page)',
                   style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onSurface.withOpacity(0.5),
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -381,9 +385,13 @@ class _StackVisualTabState extends State<_StackVisualTab> {
                     duration: const Duration(milliseconds: 300),
                     margin: const EdgeInsets.symmetric(vertical: 4),
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 20, vertical: 12),
+                      horizontal: 20,
+                      vertical: 12,
+                    ),
                     decoration: BoxDecoration(
-                      color: isTop ? item.color : item.color.withOpacity(0.4),
+                      color: isTop
+                          ? item.color
+                          : item.color.withValues(alpha: 0.4),
                       borderRadius: BorderRadius.circular(12),
                       border: isTop
                           ? Border.all(color: item.color, width: 2)
@@ -391,9 +399,9 @@ class _StackVisualTabState extends State<_StackVisualTab> {
                       boxShadow: isTop
                           ? [
                               BoxShadow(
-                                color: item.color.withOpacity(0.3),
+                                color: item.color.withValues(alpha: 0.3),
                                 blurRadius: 8,
-                              )
+                              ),
                             ]
                           : null,
                     ),
@@ -419,7 +427,7 @@ class _StackVisualTabState extends State<_StackVisualTab> {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: theme.colorScheme.outline.withOpacity(0.2),
+                    color: theme.colorScheme.outline.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: const Text('📱 App Root'),
@@ -437,8 +445,7 @@ class _StackVisualTabState extends State<_StackVisualTab> {
             alignment: WrapAlignment.center,
             children: [
               ElevatedButton.icon(
-                onPressed: () =>
-                    _push('Detail', '📄', Colors.blue),
+                onPressed: () => _push('Detail', '📄', Colors.blue),
                 icon: const Icon(Icons.add, size: 16),
                 label: const Text('push(Detail)'),
                 style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
@@ -447,26 +454,22 @@ class _StackVisualTabState extends State<_StackVisualTab> {
                 onPressed: _stack.length > 1 ? _pop : null,
                 icon: const Icon(Icons.remove, size: 16),
                 label: const Text('pop()'),
-                style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.orange),
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
               ),
               ElevatedButton.icon(
                 onPressed: () => _push('Profile', '👤', Colors.green),
                 icon: const Icon(Icons.add, size: 16),
                 label: const Text('push(Profile)'),
-                style:
-                    ElevatedButton.styleFrom(backgroundColor: Colors.green),
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
               ),
               ElevatedButton.icon(
                 onPressed: () => _go('Settings', '⚙️', Colors.purple),
                 icon: const Icon(Icons.refresh, size: 16),
                 label: const Text('go(Settings)'),
-                style:
-                    ElevatedButton.styleFrom(backgroundColor: Colors.purple),
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.purple),
               ),
               ElevatedButton.icon(
-                onPressed: () =>
-                    _replace('New Page', '🔄', Colors.teal),
+                onPressed: () => _replace('New Page', '🔄', Colors.teal),
                 icon: const Icon(Icons.swap_horiz, size: 16),
                 label: const Text('replace()'),
                 style: ElevatedButton.styleFrom(backgroundColor: Colors.teal),
@@ -475,8 +478,7 @@ class _StackVisualTabState extends State<_StackVisualTab> {
                 onPressed: () => _go('Home', '🏠', Colors.green),
                 icon: const Icon(Icons.home, size: 16),
                 label: const Text('Reset'),
-                style:
-                    ElevatedButton.styleFrom(backgroundColor: Colors.grey),
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.grey),
               ),
             ],
           ),
@@ -637,9 +639,9 @@ class _ConceptCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.08),
+        color: color.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -706,7 +708,6 @@ class _LogDisplay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     return Container(
       height: 150,
       decoration: BoxDecoration(
@@ -744,7 +745,7 @@ class _ComparisonTable extends StatelessWidget {
   Widget build(BuildContext context) {
     return Table(
       border: TableBorder.all(
-        color: theme.colorScheme.outline.withOpacity(0.3),
+        color: theme.colorScheme.outline.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(12),
       ),
       columnWidths: const {
@@ -755,7 +756,7 @@ class _ComparisonTable extends StatelessWidget {
       children: [
         TableRow(
           decoration: BoxDecoration(
-            color: theme.colorScheme.primaryContainer.withOpacity(0.5),
+            color: theme.colorScheme.primaryContainer.withValues(alpha: 0.5),
           ),
           children: ['Feature', 'push()', 'go()']
               .map(
@@ -778,24 +779,24 @@ class _ComparisonTable extends StatelessWidget {
           'Return Data': ['✅ ရနိုင်', '❌ မရ'],
           'Tab Change': ['မသုံးသင့်', '✅ သုံးသင့်'],
           'Use Case': ['Detail View', 'Root Nav'],
-        }
-            .entries
-            .map(
-              (e) => TableRow(
-                children: [e.key, e.value[0], e.value[1]]
-                    .map(
-                      (t) => TableCell(
-                        child: Padding(
-                          padding: const EdgeInsets.all(8),
-                          child: Text(t, textAlign: TextAlign.center,
-                              style: const TextStyle(fontSize: 12)),
-                        ),
+        }.entries.map(
+          (e) => TableRow(
+            children: [e.key, e.value[0], e.value[1]]
+                .map(
+                  (t) => TableCell(
+                    child: Padding(
+                      padding: const EdgeInsets.all(8),
+                      child: Text(
+                        t,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(fontSize: 12),
                       ),
-                    )
-                    .toList(),
-              ),
-            )
-            .toList(),
+                    ),
+                  ),
+                )
+                .toList(),
+          ),
+        ),
       ],
     );
   }
@@ -826,12 +827,12 @@ class _CodeExampleCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
               color: const Color(0xFF1E1E2E),
-              borderRadius:
-                  const BorderRadius.vertical(top: Radius.circular(16)),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(16),
+              ),
             ),
             child: Row(
               children: [

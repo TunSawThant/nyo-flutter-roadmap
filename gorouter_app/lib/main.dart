@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'services/auth_service.dart';
 import 'router/app_router.dart';
@@ -6,9 +7,9 @@ import 'router/app_router.dart';
 /// =====================================================
 /// GoRouter Learning App - Main Entry Point
 /// =====================================================
-/// 
+///
 /// ဤ App တွင် သင်ကြားနိုင်သောအကြောင်းအရာများ:
-/// 
+///
 /// 1. GoRouter Setup & Configuration
 /// 2. Route Declaration (GoRoute, ShellRoute)
 /// 3. Auth Guard (redirect + refreshListenable)
@@ -26,7 +27,7 @@ import 'router/app_router.dart';
 ///    - Return Data (pop(data) + push() await)
 /// 6. Error Handling (errorBuilder)
 /// 7. GoRouterState (Current Route Info)
-/// 
+///
 /// =====================================================
 
 void main() {
@@ -49,7 +50,16 @@ class GoRouterLearnApp extends StatefulWidget {
 class _GoRouterLearnAppState extends State<GoRouterLearnApp> {
   // GoRouter Instance - AuthService ကို depend လုပ်သည်
   // AuthService State ပြောင်းသည်နှင့် Router က redirect() Re-run မည်
-  late final _router = createRouter(context.read<AuthService>());
+  late final GoRouter _router;
+
+  @override
+  void initState() {
+    super.initState();
+    // context.read() သည် listen မလုပ်သောကြောင့် initState တွင် ခေါ်နိုင်သည်။
+    // build() ထဲတွင် ဖန်တီးခြင်းထက် Router Instance တစ်ခုတည်း
+    // တည်ငြိမ်စွာ ရပ်တည်ကြောင်း သေချာစေသည် (Hot Reload အပါအဝင်)။
+    _router = createRouter(context.read<AuthService>());
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -67,9 +77,7 @@ class _GoRouterLearnAppState extends State<GoRouterLearnApp> {
         ),
         useMaterial3: true,
         fontFamily: 'Roboto',
-        cardTheme: const CardThemeData(
-          elevation: 0,
-        ),
+        cardTheme: const CardThemeData(elevation: 0),
         appBarTheme: const AppBarTheme(
           centerTitle: false,
           scrolledUnderElevation: 0,

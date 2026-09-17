@@ -49,7 +49,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      theme.colorScheme.primaryContainer.withOpacity(0.5),
+                      theme.colorScheme.primaryContainer.withValues(alpha: 0.5),
                       theme.colorScheme.surface,
                     ],
                   ),
@@ -63,7 +63,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   onTap: () => context.push(AppRoutes.profile),
                   child: CircleAvatar(
                     backgroundColor: theme.colorScheme.primaryContainer,
-                    child: Text(user?.avatar ?? '👤', style: const TextStyle(fontSize: 20)),
+                    child: Text(
+                      user?.avatar ?? '👤',
+                      style: const TextStyle(fontSize: 20),
+                    ),
                   ),
                 ),
               ),
@@ -100,15 +103,14 @@ class _HomeScreenState extends State<HomeScreen> {
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 itemCount: _categories.length,
-                separatorBuilder: (_, __) => const SizedBox(width: 8),
+                separatorBuilder: (_, _) => const SizedBox(width: 8),
                 itemBuilder: (context, index) {
                   final cat = _categories[index];
                   final isSelected = cat == _selectedCategory;
                   return FilterChip(
                     label: Text(cat),
                     selected: isSelected,
-                    onSelected: (_) =>
-                        setState(() => _selectedCategory = cat),
+                    onSelected: (_) => setState(() => _selectedCategory = cat),
                     selectedColor: theme.colorScheme.primaryContainer,
                   );
                 },
@@ -129,15 +131,12 @@ class _HomeScreenState extends State<HomeScreen> {
                 crossAxisSpacing: 12,
                 mainAxisSpacing: 12,
               ),
-              delegate: SliverChildBuilderDelegate(
-                (context, index) {
-                  return _ProductCard(
-                    product: _filteredProducts[index],
-                    onTap: () => _navigateToDetail(_filteredProducts[index]),
-                  );
-                },
-                childCount: _filteredProducts.length,
-              ),
+              delegate: SliverChildBuilderDelegate((context, index) {
+                return _ProductCard(
+                  product: _filteredProducts[index],
+                  onTap: () => _navigateToDetail(_filteredProducts[index]),
+                );
+              }, childCount: _filteredProducts.length),
             ),
           ),
           const SliverToBoxAdapter(child: SizedBox(height: 100)),
@@ -171,15 +170,12 @@ class _WelcomeBanner extends StatelessWidget {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [
-            theme.colorScheme.primary,
-            theme.colorScheme.secondary,
-          ],
+          colors: [theme.colorScheme.primary, theme.colorScheme.secondary],
         ),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: theme.colorScheme.primary.withOpacity(0.3),
+            color: theme.colorScheme.primary.withValues(alpha: 0.3),
             blurRadius: 15,
             offset: const Offset(0, 6),
           ),
@@ -202,7 +198,7 @@ class _WelcomeBanner extends StatelessWidget {
                 Text(
                   'GoRouter Navigation ကို လေ့လာကြစို့',
                   style: theme.textTheme.bodySmall?.copyWith(
-                    color: Colors.white.withOpacity(0.9),
+                    color: Colors.white.withValues(alpha: 0.9),
                   ),
                 ),
               ],
@@ -211,7 +207,7 @@ class _WelcomeBanner extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
+              color: Colors.white.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12),
             ),
             child: const Text('🗺️', style: TextStyle(fontSize: 32)),
@@ -231,11 +227,11 @@ class _NavigationInfoCard extends StatelessWidget {
     final theme = Theme.of(context);
     return Card(
       elevation: 0,
-      color: theme.colorScheme.secondaryContainer.withOpacity(0.4),
+      color: theme.colorScheme.secondaryContainer.withValues(alpha: 0.4),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
         side: BorderSide(
-          color: theme.colorScheme.secondary.withOpacity(0.2),
+          color: theme.colorScheme.secondary.withValues(alpha: 0.2),
         ),
       ),
       child: Padding(
@@ -245,14 +241,21 @@ class _NavigationInfoCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(Icons.lightbulb_outline,
-                    color: theme.colorScheme.secondary, size: 18),
+                Icon(
+                  Icons.lightbulb_outline,
+                  color: theme.colorScheme.secondary,
+                  size: 18,
+                ),
                 const SizedBox(width: 8),
-                Text(
-                  'Navigation ရှင်းလင်းချက်',
-                  style: theme.textTheme.labelLarge?.copyWith(
-                    color: theme.colorScheme.secondary,
-                    fontWeight: FontWeight.bold,
+                // BUG FIX: Expanded မပါလျှင် ကျဉ်းသော မျက်နှာပြင်တွင်
+                // စာသား ကျော်လွန် (RenderFlex overflow) ဖြစ်သည်
+                Expanded(
+                  child: Text(
+                    'Navigation ရှင်းလင်းချက်',
+                    style: theme.textTheme.labelLarge?.copyWith(
+                      color: theme.colorScheme.secondary,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ],
@@ -263,28 +266,26 @@ class _NavigationInfoCard extends StatelessWidget {
               ('context.go()', 'Stack ကို Replace လုပ်သည် → Back မပြန်နိုင်'),
               ('context.pop()', 'Stack မှ ထိပ်ဆုံး Page ဖျက်သည်'),
               ('context.replace()', 'လက်ရှိ Page ကို Replace လုပ်သည်'),
-            ]
-                .map(
-                  (item) => Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 2),
-                    child: RichText(
-                      text: TextSpan(
-                        style: theme.textTheme.bodySmall,
-                        children: [
-                          TextSpan(
-                            text: '• ${item.$1}: ',
-                            style: const TextStyle(
-                              fontFamily: 'monospace',
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          TextSpan(text: item.$2),
-                        ],
+            ].map(
+              (item) => Padding(
+                padding: const EdgeInsets.symmetric(vertical: 2),
+                child: RichText(
+                  text: TextSpan(
+                    style: theme.textTheme.bodySmall,
+                    children: [
+                      TextSpan(
+                        text: '• ${item.$1}: ',
+                        style: const TextStyle(
+                          fontFamily: 'monospace',
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    ),
+                      TextSpan(text: item.$2),
+                    ],
                   ),
-                )
-                .toList(),
+                ),
+              ),
+            ),
           ],
         ),
       ),
@@ -312,7 +313,7 @@ class _ProductCard extends StatelessWidget {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
           side: BorderSide(
-            color: theme.colorScheme.outlineVariant.withOpacity(0.5),
+            color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
           ),
         ),
         clipBehavior: Clip.antiAlias,
@@ -334,15 +335,19 @@ class _ProductCard extends StatelessWidget {
               child: Stack(
                 alignment: Alignment.center,
                 children: [
-                  Text(product.imageEmoji,
-                      style: const TextStyle(fontSize: 50)),
+                  Text(
+                    product.imageEmoji,
+                    style: const TextStyle(fontSize: 50),
+                  ),
                   if (!product.isInStock)
                     Positioned(
                       top: 8,
                       right: 8,
                       child: Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 4),
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: theme.colorScheme.error,
                           borderRadius: BorderRadius.circular(8),
@@ -369,7 +374,9 @@ class _ProductCard extends StatelessWidget {
                     // Category Badge
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 3),
+                        horizontal: 8,
+                        vertical: 3,
+                      ),
                       decoration: BoxDecoration(
                         color: theme.colorScheme.tertiaryContainer,
                         borderRadius: BorderRadius.circular(20),
@@ -396,8 +403,11 @@ class _ProductCard extends StatelessWidget {
                       children: [
                         Row(
                           children: [
-                            const Icon(Icons.star_rounded,
-                                size: 14, color: Colors.amber),
+                            const Icon(
+                              Icons.star_rounded,
+                              size: 14,
+                              color: Colors.amber,
+                            ),
                             const SizedBox(width: 2),
                             Text(
                               product.rating.toString(),

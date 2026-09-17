@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../router/app_router.dart';
 
 /// Error Screen - 404 Page Not Found
 /// GoRouter ၏ errorBuilder တွင် သတ်မှတ်ထားသော Page
@@ -14,8 +15,11 @@ class ErrorScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: theme.colorScheme.surface,
+      // BUG FIX: မူလက Column ကို တိုက်ရိုက်ထားသောကြောင့် မျက်နှာပြင်သေးသော Device
+      // သို့မဟုတ် Landscape တွင် "RenderFlex overflowed by 169 pixels" ဖြစ်ပြီး
+      // အဝါ/အနက် Stripe ပေါ်သည်။ SingleChildScrollView ဖြင့် ထုပ်ပိုးလိုက်သည်။
       body: Center(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(32),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -52,10 +56,12 @@ class ErrorScreen extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: theme.colorScheme.errorContainer.withOpacity(0.3),
+                  color: theme.colorScheme.errorContainer.withValues(
+                    alpha: 0.3,
+                  ),
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
-                    color: theme.colorScheme.error.withOpacity(0.2),
+                    color: theme.colorScheme.error.withValues(alpha: 0.2),
                   ),
                 ),
                 child: Column(
@@ -84,7 +90,9 @@ class ErrorScreen extends StatelessWidget {
               // GoRouter errorBuilder Explanation
               Card(
                 elevation: 0,
-                color: theme.colorScheme.secondaryContainer.withOpacity(0.3),
+                color: theme.colorScheme.secondaryContainer.withValues(
+                  alpha: 0.3,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
@@ -128,12 +136,14 @@ class ErrorScreen extends StatelessWidget {
               const SizedBox(height: 32),
 
               FilledButton.icon(
-                onPressed: () => context.go('/home'),
+                onPressed: () => context.go(AppRoutes.home),
                 icon: const Icon(Icons.home_rounded),
                 label: const Text('Home သို့ ပြန်သွားမည်'),
                 style: FilledButton.styleFrom(
                   padding: const EdgeInsets.symmetric(
-                      horizontal: 32, vertical: 16),
+                    horizontal: 32,
+                    vertical: 16,
+                  ),
                 ),
               ),
             ],
